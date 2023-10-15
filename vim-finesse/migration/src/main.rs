@@ -1,3 +1,4 @@
+use entity::sea_orm::EntityTrait;
 use migration::Migrator;
 use sea_orm_migration::cli;
 use sea_schema::migration::*;
@@ -36,4 +37,26 @@ fn get_seaorm_create_stmt<E: EntityTrait>(e: E) -> TableCreateStatement {
 
 fn get_seaorm_drop_stmt<E: EntityTrait>(e: E) -> TableDropStatement {
     Table::drop().table(e).if_exists().to_owned()
+}
+
+/* Helper function to create a database table for a given entity. */
+async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+    let stmts = vec![get_seaorm_create_stmt(note::Entity)];
+
+    for stmt in stmts {
+        manager.create_table(stmt.to_owned()).await?;
+    }
+
+    Ok(())
+}
+
+/* Helper function to drop a database table.  */
+async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+    let stmts = vec![get_seaorm_drop_stmt(note::Entity)];
+
+    for stmt in stmts {
+        manager.drop_table(stmt.to_owned()).await?;
+    }
+
+    Ok(())
 }
