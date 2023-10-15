@@ -17,6 +17,6 @@ features = [
   "macros",
   "debug-print",
   "runtime-tokio-native-tls",
-  "sqlx-postgres",
+  "sqlx-sqlite",
 ]
 default-features = false
