@@ -1,0 +1,18 @@
+[package]
+name = "web_task_service"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "4"
+uuid = { version = "1.5", features = ["v4"]} 
+serde = { version = "1", features = ["derive"]} # serialize/deserialize uuids
+aws-config = "0.56" # allow user to connect to backend on aws
+aws-sdk-dynamodb = "^0.33" # allow user to connect to aws dynamodb
+env_logger = "0.10"
+log = "0.4"
+strum_macros = "0.25"
+strum = { version = "0.25", features = ["derive"]}
+derive_more = "0.99"
