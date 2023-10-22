@@ -1,5 +1,5 @@
 mod api; // declare existence of an API module, to be implemented later
-
+mod model;
 use api::task::get_task;
 
 use actix_web::{middleware::Logger, web::Data, App, HttpServer};
