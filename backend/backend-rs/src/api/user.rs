@@ -2,7 +2,6 @@ use actix_web::{delete, get, post, put, HttpResponse, Responder};
 
 #[get("/user")]
 pub async fn get_user() -> impl Responder {
-    println!("service pinged");
     HttpResponse::Ok().body("get_user")
 }
 
