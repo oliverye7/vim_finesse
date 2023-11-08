@@ -1,16 +1,11 @@
 use actix_web::{
-    error::ResponseError,
     get,
-    http::{header::ContentType, StatusCode},
-    post, put,
-    web::Data,
     web::Json,
     web::Path,
-    HttpResponse,
 };
 
-use derive_more::Display;
 use serde::{Deserialize, Serialize};
+use log::{warn, info};
 
 #[derive(Deserialize, Serialize)]
 pub struct ChallengeIdentifier {
@@ -24,6 +19,7 @@ pub struct ChallengeResponse {
 
 #[get("/challenge")]
 pub async fn get_challenge() -> Json<ChallengeResponse> {
+    info!("Requesting to get a challenge.");
     let response = ChallengeResponse {
         message: "User requested to get a challenge".to_string(),
     };
@@ -32,12 +28,13 @@ pub async fn get_challenge() -> Json<ChallengeResponse> {
 
 #[get("/challenge/{challenge_id}")]
 pub async fn get_specific_challenge(
-    challenge_identifier: Path<ChallengeIdentifier>,
+    challenge_id: Path<ChallengeIdentifier>,
 ) -> Json<ChallengeResponse> {
+    warn!("Database is not setup yet.");
     let response = ChallengeResponse {
         message: format!(
             "User requested to get a challenge and got {}",
-            challenge_identifier.into_inner().challenge_id
+            challenge_id.into_inner().challenge_id
         ),
     };
     Json(response)
