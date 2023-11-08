@@ -12,7 +12,7 @@ Vim Finesse will give all users a set of these tasks and grant them the freedom 
 
 As a proof of concept, we will begin with a fixed set of tasks (e.g. delete "lorem" on line 3 starting at line 1), allowing users to asynchronously come up with their fastest and/or most efficient Vim keystrokes to accomplish this task. Upon completion, we will display a few examples from other users of fast and/or efficient key combinations to finish this task.
 
-# Logging
+## Logging
 
 Using `env_logger`, we will add the following import to all files using logging:
 ```
@@ -21,7 +21,7 @@ use log::{error, warn, info, debug, trace};
 
 The corresponding macros (e.g. `warn!("Warning");`) will be used to create an output with a danger level and a timestamp.
 
-# Database and Local Run
+## Database and Local Run
 
 In order to get a working local database, [install PostgresQL 16 here](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads). Follow the instructions with:
 ```
