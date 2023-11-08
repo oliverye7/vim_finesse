@@ -38,7 +38,7 @@ Next, open a psql shell and type in the above password. Create the local databas
 ```
 > psql -U postgres
 postgres=# CREATE DATABASE vim WITH ENCODING 'UTF8' LC_COLLATE='C' LC_CTYPE='C';
-\l
+postgres=# \l
 ```
 
 The last command will show you your tables, one of which should be vim.
