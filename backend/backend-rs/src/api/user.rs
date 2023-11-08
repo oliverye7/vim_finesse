@@ -1,4 +1,7 @@
-use actix_web::{get, post, HttpResponse, Responder};
+use log::info;
+use actix_web::{get, post, web, HttpResponse, Responder};
+use bytes::BytesMut;
+use prost::Message;
 
 #[get("/user")]
 pub async fn get_user() -> impl Responder {
@@ -6,7 +9,7 @@ pub async fn get_user() -> impl Responder {
 }
 
 #[post("/user")]
-pub async fn create_user(user: String) -> impl Responder {
-    println!("Welcome, {}!", user);
+pub async fn create_user(request: web::Bytes) -> impl Responder {
+    
     HttpResponse::Ok().body("create_user")
 }
