@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
  * the starting line, and the location on the line.
  * The challenge is deemed complete when the string of the text is the end state.
 */
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Challenge {
     pub id: String,
     pub user_id: String,

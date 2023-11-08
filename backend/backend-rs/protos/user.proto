@@ -1,0 +1,10 @@
+// user.proto
+syntax = "proto3";
+
+package user;
+
+// Define a Protobuf message for creating a user
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+}
