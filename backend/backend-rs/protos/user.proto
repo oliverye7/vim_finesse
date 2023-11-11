@@ -8,3 +8,11 @@ message CreateUserRequest {
   string username = 1;
   string email = 2;
 }
+
+// Standard Protobuf message response for creating a user
+// Same as the request but with a uuid generated in the API call.
+message CreateUserResponse {
+  string username = 1;
+  string email = 2;
+  string id = 3;
+}

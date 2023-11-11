@@ -1,6 +1,7 @@
 mod api;
 mod model;
 mod db;
+mod proto;
 
 use actix_web::{web, middleware::Logger, App, HttpServer};
 use api::challenge::{get_challenge, get_specific_challenge};
