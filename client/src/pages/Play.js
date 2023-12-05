@@ -1,4 +1,5 @@
 import { React, Fragment, useEffect, useRef, useState } from "react";
+import ChallengeComponent from "../components/Home/Play/Challenge";
 
 function Play(props) {
   return (
@@ -7,7 +8,7 @@ function Play(props) {
         <a href="/home">go back home</a>
       </div>
       play the game:
-      <div>load lorem ipsum text from backend</div>
+      <ChallengeComponent></ChallengeComponent>
     </div>
   );
 }

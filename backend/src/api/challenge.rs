@@ -21,8 +21,11 @@ pub struct ChallengeResponse {
 pub async fn get_challenge() -> Json<ChallengeResponse> {
     info!("Requesting to get a challenge.");
     let response = ChallengeResponse {
-        message: "User requested to get a challenge".to_string(),
+        message: "received challenge: lorem ipsum dolor... ".to_string(),
     };
+    //let response = ChallengeResponse {
+    //    message: "User requested to get a challenge".to_string(),
+    //};
     Json(response)
 }
 
