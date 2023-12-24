@@ -13,13 +13,15 @@
     "date-fns": "^2.30.0",
     "express": "^4.18.2",
     "pg": "^8.11.0",
-    "react": "^18.1.0",
+    "react": "^18.2.0",
     "react-dom": "^18.1.0",
     "react-dropzone": "^14.2.3",
     "react-pdf": "^7.0.3",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
+    "react-vim-wasm": "^0.1.4",
+    "vim-wasm": "^0.0.13",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
