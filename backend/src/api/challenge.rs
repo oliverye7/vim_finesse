@@ -1,11 +1,7 @@
-use actix_web::{
-    get,
-    web::Json,
-    web::Path,
-};
+use actix_web::{get, web::Json, web::Path};
 
+use log::{info, warn};
 use serde::{Deserialize, Serialize};
-use log::{warn, info};
 
 #[derive(Deserialize, Serialize)]
 pub struct ChallengeIdentifier {
@@ -23,9 +19,6 @@ pub async fn get_challenge() -> Json<ChallengeResponse> {
     let response = ChallengeResponse {
         message: "received challenge: lorem ipsum dolor... ".to_string(),
     };
-    //let response = ChallengeResponse {
-    //    message: "User requested to get a challenge".to_string(),
-    //};
     Json(response)
 }
 

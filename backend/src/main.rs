@@ -1,8 +1,8 @@
 mod api;
-mod model;
 mod db;
+mod model;
 
-use actix_web::{web, middleware::Logger, App, HttpServer, HttpResponse, Responder, http};
+use actix_web::{http, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 
 use actix_cors::Cors;
 use api::challenge::{get_challenge, get_specific_challenge};
@@ -16,8 +16,12 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
 
     // Database pool initialization
-    let pool = create_db_pool().await.expect("Failed to create database pool.");
+    let pool = create_db_pool()
+        .await
+        .expect("Failed to create database pool.");
 
+    const ACCESS_CONTROL_CACHE_MAX_AGE: usize = 3600;
+    const PORT_NUMBER: u16 = 3001;
     // Server declaration
     HttpServer::new(move || {
         let logger = Logger::default();
@@ -27,7 +31,7 @@ async fn main() -> std::io::Result<()> {
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
-            .max_age(3600);
+            .max_age(ACCESS_CONTROL_CACHE_MAX_AGE);
 
         App::new()
             .wrap(logger)
@@ -39,7 +43,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_challenge)
             .service(get_specific_challenge)
     })
-    .bind(("127.0.0.1", 3001))?
+    .bind(("127.0.0.1", PORT_NUMBER))?
     .run()
     .await
 }

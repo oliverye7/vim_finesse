@@ -113,3 +113,9 @@ cargo build
 For the above, your standard homebrew bin may vary, so you should check yours via `which protoc`, and use that for your environment variable.
 
 Every time `./protos/*.proto` gets updated, running `cargo build` will auto-generate Rust code in `src/proto/*.rs` because of the code in `build.rs`. We will be using `./protos/` to define all request and response messages for every single API call.
+
+## Frontend
+
+installation steps:
+
+`npm install @types/react @types/react-dom`

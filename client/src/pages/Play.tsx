@@ -1,5 +1,5 @@
-import { React, Fragment, useEffect, useRef, useState } from "react";
-import ChallengeComponent from "../components/Home/Play/Challenge";
+import React from "react";
+import ChallengeComponent from "../components/Home/Play/Challenge.tsx";
 
 function Play(props) {
   return (

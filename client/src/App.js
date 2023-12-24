@@ -1,7 +1,7 @@
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Play from "./pages/Play";
-import Profile from "./pages/Profile";
+import Home from "./pages/Home.tsx";
+import Login from "./pages/Login.tsx";
+import Play from "./pages/Play.tsx";
+import Profile from "./pages/Profile.tsx";
 import React from "react";
 
 import {
