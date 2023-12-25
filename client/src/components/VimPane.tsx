@@ -95,7 +95,7 @@ function VimPane() {
         <>
             <div className="screen-wrapper">
                 <Vim
-                    worker="./static/vim-wasm/vim.js"
+                    worker="./../../public/vim.js"
                     className="vim-screen"
                     persistentDirs={DOT_VIM_DIRS}
                     onVimExit={onVimExit}
