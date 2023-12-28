@@ -1,13 +1,16 @@
 import React from "react";
+import BaseLayout from "../layouts/BaseLayout";
 
 function Profile(props) {
   return (
-    <div>
+    <BaseLayout>
       <div>
-        <a href="/home">go back home</a>
+        <div className="bg-pink-200 p-2 rounded-lg">
+          <a href="/home">go back home (click me)</a>
+        </div>
+        user profile page. can get here from login
       </div>
-      user profile page. can get here from login
-    </div>
+    </BaseLayout>
   );
 }
 

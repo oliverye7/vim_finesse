@@ -1,15 +1,20 @@
 import React from "react";
+import BaseLayout from "../layouts/BaseLayout";
 
 function Login(props) {
   return (
-    <div>
-      <div>login popup</div>
+    <BaseLayout>
       <div>
-        <a href="/profile">
-          <button className="">go to profile</button>
-        </a>
+        <div>login popup</div>
+        <div>
+          <a href="/profile">
+            <button className="bg-pink-200 rounded-lg p-2">go to profile (click me)</button>
+            <br></br>
+            TODO: sean
+          </a>
+        </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 }
 

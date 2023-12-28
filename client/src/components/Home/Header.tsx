@@ -2,13 +2,12 @@ import React from "react";
 
 function Header(props) {
   return (
-    <div className="bg-pink-200 flex h-8">
-      <div className="text-3xl font-bold justify-self-start">MR. BEAN TRUCK</div>
-      <div className="flex gap-4 justify-self-end">
-        <a href="/" className="hover:text-gray-300 transition-colors">Home</a>
-        <a href="/games" className="hover:text-gray-300 transition-colors">Games</a>
-        <a href="/about" className="hover:text-gray-300 transition-colors">About</a>
-        <a href="/login" className="bg-green-700 px-4 py-2 rounded hover:bg-green-800 transition-colors">Log in</a>
+    <div className="bg-pink-200 grid grid-cols-2 py-7 px-16">
+      <a href="/" className="text-3xl font-semibold justify-self-start text-site-menublack">VIM FINESSE</a>
+      <div className="justify-self-end font-medium flex gap-8 text-xl place-items-center">
+        <a href="/about" className="text-site-menublack hover:text-site-black">About</a>
+        <a href="/tutorial" className="text-site-menublack hover:text-site-black">How to Play</a>
+        <a href="/login" className="text-site-menublack hover:text-site-black">Log in</a>
       </div>
     </div>
   );
