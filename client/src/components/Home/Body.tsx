@@ -2,7 +2,7 @@ import React from "react";
 
 function Body(props) {
   return (
-    <div>
+    <div className="bg-pink-400">
       <div>Welcome to VimGame.</div>
       <div>
         <a href="/login">
