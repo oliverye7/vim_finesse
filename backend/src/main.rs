@@ -2,7 +2,7 @@ mod api;
 mod db;
 mod model;
 
-use actix_web::{http, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{http, middleware::Logger, web, App, HttpServer};
 
 use actix_cors::Cors;
 use api::challenge::{get_challenge, get_specific_challenge};
