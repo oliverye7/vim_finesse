@@ -13,11 +13,12 @@ derive_more = "0.99.17"
 env_logger = "0.10.0"
 log = "0.4.20"
 serde = { version = "1.0.189", features = ["derive"] }
-uuid = "1.5.0"
-sqlx = { version = "0.7.2", features = ["postgres", "runtime-tokio"]}
+uuid = { version = "1.6.1", features = ["v4", "fast-rng"] }
+sqlx = { version = "0.7.2", features = ["postgres", "runtime-tokio", "uuid"]}
 tokio = { version = "1.33.0", features = ["rt", "macros"]}
 prost = "0.12.1"
 bytes = "1.5.0"
+
 
 [build-dependencies]
 prost-build = "0.12.1"

@@ -70,6 +70,8 @@ password: "password"
 ```
 
 We will be using the `sqlx` ORM with PostgresQL. First set the local database URL:
+
+note: if your username and password are different here, change the username and password in the url accordingly
 ```
 export DATABASE_URL="postgres://postgres:password@localhost/vim"
 ```

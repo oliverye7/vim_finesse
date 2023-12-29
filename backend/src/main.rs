@@ -6,7 +6,7 @@ use actix_web::{http, middleware::Logger, web, App, HttpResponse, HttpServer, Re
 
 use actix_cors::Cors;
 use api::challenge::{get_challenge, get_specific_challenge};
-use api::user::{create_user, get_user};
+use api::user::{create_user, get_user, register};
 use db::conn::create_db_pool;
 
 #[actix_web::main]
@@ -40,6 +40,7 @@ async fn main() -> std::io::Result<()> {
             // All service routes go here
             .service(get_user)
             .service(create_user)
+            .service(register)
             .service(get_challenge)
             .service(get_specific_challenge)
     })
