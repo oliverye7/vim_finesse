@@ -2,8 +2,8 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 use uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use bytes::BytesMut;
-use log::info;
-use prost::Message;
+//use log::info;
+//use prost::Message;
 use sqlx::Pool;
 
 #[derive(Deserialize, Serialize)]
@@ -34,37 +34,46 @@ pub async fn register(
     let user = &info.into_inner();
 
     let id = Uuid::new_v4();
-    let TEMP_TOKEN = "token";
+    let temp_token = "token";
 
     match sqlx::query!(
-        "SELECT * FROM users WHERE user.username = $1",
+        "SELECT * FROM users WHERE username = $1;",
         user.username
     )
     .fetch_one(conn)
     .await
     {
-        Ok(Some(record)) => {
-            HttpResponse::BadRequest().body("User already exists");
+        Ok(_record) => {
+            return HttpResponse::BadRequest().body("User already exists");
         }
-        Ok(None) => {
-            // do nothing, execute the query on line 58
+        Err(sqlx::Error::RowNotFound) => {
+            // If no record is found, do nothing and proceed
         }
-        Err(e) =>  {
-            HttpResponse::InternalServerError().body(format!("Server Error: {}", e))
+        Err(e) => {
+            return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
         }
+        //Ok(Some(record)) => {
+        //    return HttpResponse::BadRequest().body("User already exists");
+        //}
+        //Ok(None) => {
+        //    // do nothing, execute the query on line 58
+        //}
+        //Err(e) =>  {
+        //    return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
+        //}
     }
 
     match sqlx::query!(
-        "INSERT INTO users (id, username, email, token) VALUES ($1, $2, $3, $4) RETURNING id",
+        "INSERT INTO users (id, username, email, token) VALUES ($1, $2, $3, $4) RETURNING id;",
         id,
         user.username,
         user.email,
-        TEMP_TOKEN
+        temp_token
     )
     .fetch_one(conn)
     .await
     {
-        Ok(record) => HttpResponse::Ok().json(format!("User {} successfully added", user.username)), // or handle the returned ID as needed
+        Ok(_record) => HttpResponse::Ok().json(format!("User {} successfully added", user.username)), // or handle the returned ID as needed
         Err(e) => {
             HttpResponse::InternalServerError().body(format!("Server Error: {}", e))
         }
