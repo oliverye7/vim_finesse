@@ -1,11 +1,18 @@
-use crate::model::user::RegisterRequest;
 use actix_web::{get, post, web, HttpResponse, Responder};
 use uuid::Uuid;
-
+use serde::{Deserialize, Serialize};
 use bytes::BytesMut;
 use log::info;
 use prost::Message;
 use sqlx::Pool;
+
+#[derive(Deserialize, Serialize)]
+struct RegisterRequest {
+    id: String,
+    username: String,
+    email: String,
+    token: String,
+}
 
 #[get("/user")]
 pub async fn get_user() -> impl Responder {
@@ -28,6 +35,25 @@ pub async fn register(
 
     let id = Uuid::new_v4();
     let TEMP_TOKEN = "token";
+
+    match sqlx::query!(
+        "SELECT * FROM users WHERE user.username = $1",
+        user.username
+    )
+    .fetch_one(conn)
+    .await
+    {
+        Ok(Some(record)) => {
+            HttpResponse::BadRequest().body("User already exists");
+        }
+        Ok(None) => {
+            // do nothing, execute the query on line 58
+        }
+        Err(e) =>  {
+            HttpResponse::InternalServerError().body(format!("Server Error: {}", e))
+        }
+    }
+
     match sqlx::query!(
         "INSERT INTO users (id, username, email, token) VALUES ($1, $2, $3, $4) RETURNING id",
         id,
@@ -40,8 +66,7 @@ pub async fn register(
     {
         Ok(record) => HttpResponse::Ok().json(format!("User {} successfully added", user.username)), // or handle the returned ID as needed
         Err(e) => {
-            return HttpResponse::InternalServerError()
-                .body(format!("Failed to register user: {}", e))
+            HttpResponse::InternalServerError().body(format!("Server Error: {}", e))
         }
     }
 }
