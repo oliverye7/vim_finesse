@@ -2,6 +2,7 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     username VARCHAR NOT NULL UNIQUE,
+    passcode VARCHAR NOT NULL,
     email VARCHAR NOT NULL UNIQUE,
     token VARCHAR
 );

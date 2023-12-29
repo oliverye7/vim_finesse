@@ -4,11 +4,13 @@ use uuid::Uuid;
 //use log::info;
 //use prost::Message;
 use sqlx::Pool;
+use bcrypt::{hash, verify, DEFAULT_COST};
 
 #[derive(Deserialize, Serialize)]
 pub struct RegisterRequest {
     id: String,
     username: String,
+    passcode: String,
     email: String,
     token: String,
 }
@@ -23,6 +25,12 @@ pub async fn create_user(_request: web::Bytes) -> impl Responder {
     HttpResponse::Ok().body("create_user")
 }
 
+#[post("/login")]
+pub async fn login(_request: web::Bytes) -> impl Responder {
+    // use the bcrypt verify function
+    HttpResponse::Ok().body("create_user")
+}
+
 #[post("/register")]
 pub async fn register(
     pool: web::Data<Pool<sqlx::Postgres>>,
@@ -32,9 +40,11 @@ pub async fn register(
     let conn = pool.get_ref();
     let user = &info.into_inner();
 
-    let id = Uuid::new_v4();
-    let temp_token = "token";
-
+    let hashed_password = hash(&user.passcode, DEFAULT_COST).expect("Error hashing password");
+    println!("{}", user.passcode);
+    println!("{}", hashed_password);
+    let is_valid = verify(&user.passcode, &hashed_password).expect("Error verifying password");
+    println!("{}", is_valid);
     match sqlx::query!("SELECT * FROM users WHERE username = $1;", user.username)
         .fetch_one(conn)
         .await
@@ -47,21 +57,20 @@ pub async fn register(
         }
         Err(e) => {
             return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
-        } //Ok(Some(record)) => {
-          //    return HttpResponse::BadRequest().body("User already exists");
-          //}
-          //Ok(None) => {
-          //    // do nothing, execute the query on line 58
-          //}
-          //Err(e) =>  {
-          //    return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
-          //}
+        } 
     }
 
+    let id = Uuid::new_v4();
+    let temp_token = "token";
+    //let hashed_password = hash(user.passcode, DEFAULT_COST).expect("Error hashing password");
+    //println(user.passcode);
+    //println(hashed_password);
+
     match sqlx::query!(
-        "INSERT INTO users (id, username, email, token) VALUES ($1, $2, $3, $4) RETURNING id;",
+        "INSERT INTO users (id, username, passcode, email, token) VALUES ($1, $2, $3, $4, $5) RETURNING id;",
         id,
         user.username,
+        user.passcode,
         user.email,
         temp_token
     )
