@@ -2,11 +2,10 @@ mod api;
 mod db;
 mod model;
 
-use actix_web::{http, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
-
+use actix_web::{http, middleware::Logger, web, App, HttpServer};
 use actix_cors::Cors;
 use api::challenge::{get_challenge, get_specific_challenge};
-use api::user::{create_user, get_user};
+use api::user::{create_user, get_user, get_github_access_token};
 use db::conn::create_db_pool;
 
 #[actix_web::main]
@@ -40,6 +39,7 @@ async fn main() -> std::io::Result<()> {
             // All service routes go here
             .service(get_user)
             .service(create_user)
+            .service(get_github_access_token)
             .service(get_challenge)
             .service(get_specific_challenge)
     })
