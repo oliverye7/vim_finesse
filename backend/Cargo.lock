@@ -304,7 +304,6 @@ dependencies = [
  "prost-build",
  "reqwest",
  "serde",
- "serde_json",
  "sqlx",
  "tokio",
  "uuid",

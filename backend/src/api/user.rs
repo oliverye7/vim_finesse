@@ -1,8 +1,7 @@
 //use log::info;
-use actix_web::{get, post, web, HttpResponse, Responder};
-use serde::{Deserialize};
+use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use reqwest;
-use serde_json::json;
+use serde::Deserialize;
 //use bytes::BytesMut;
 //use prost::Message;
 
@@ -28,11 +27,7 @@ pub struct AccessTokenQuery {
 pub async fn get_github_access_token(query: web::Query<AccessTokenQuery>) -> impl Responder {
     println!("WE RECEIVED A FUNCTION CALL RAAAHHHH");
     let code = &query.code;
-
     let client = reqwest::Client::new();
-    //let params: &str = "?client_id=" + GITHUB_CLIENT_ID + "&client_secret=" + GITHUB_CLIENT_SECRET + "&code=" + code;
-    //let params = format!("?client_id={}&client_secret={}&code={}", GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, code);
-    //let target_url = format!("https://github.com/login/oauth/access_token{}", params);
 
     let params = [
         ("client_id", GITHUB_CLIENT_ID),
@@ -42,16 +37,45 @@ pub async fn get_github_access_token(query: web::Query<AccessTokenQuery>) -> imp
 
     let target_url = "https://github.com/login/oauth/access_token";
 
-    println!("STARTING POST REQUEST CALL");
-    match client.post(target_url)
+    match client
+        .post(target_url)
         .form(&params)
-        .header("Accept", "application/json") // GitHub API requires this header for JSON response
+        .header("Accept", "application/json")
         .send()
         .await
     {
         Ok(response) => match response.text().await {
             Ok(text) => {
-                println!("SDLFJSDFJSD");
+                return HttpResponse::Ok().body(text);
+            }
+            Err(_) => HttpResponse::InternalServerError().finish(),
+        },
+        Err(_) => HttpResponse::InternalServerError().finish(),
+    }
+}
+
+#[get("/getUserGithubProfile")]
+pub async fn get_user_github_profile(request: HttpRequest) -> impl Responder {
+    println!("Received");
+
+    let auth_header = match request.headers().get("Authorization") {
+        Some(header) => header.to_str().unwrap_or(""),
+        None => return HttpResponse::BadRequest().body("Authorization header missing")
+    };
+
+    let client = reqwest::Client::new();
+    let target_url = "https://api.github.com/user";
+    let app_name = "Vim Finesse";
+
+    match client
+        .get(target_url)
+        .header("User-Agent", app_name)
+        .header("Authorization", auth_header)
+        .send()
+        .await
+    {
+        Ok(response) => match response.text().await {
+            Ok(text) => {
                 println!("{}", text);
                 return HttpResponse::Ok().body(text);
             }
@@ -59,31 +83,4 @@ pub async fn get_github_access_token(query: web::Query<AccessTokenQuery>) -> imp
         },
         Err(_) => HttpResponse::InternalServerError().finish(),
     }
-
-    //match client.post(target_url)
-    //    .form(&params)
-    //    .header("Content-Type", "application/json")
-    //    .send()
-    //    .await
-    //    {
-    //        Ok(response) => 
-    //            match response.text().await 
-    //        {
-    //                Ok(text) => {
-    //                    println!("Response JSON: {}", text);
-    //                    return HttpResponse::Ok().body(text);
-    //                },
-    //                Err(_) => HttpResponse::InternalServerError().finish(),
-    //        },
-    //        Err(_) => HttpResponse::InternalServerError().finish(),    
-    //    }
-
-    //HttpResponse::Ok().body("get_user")
 }
-//#[get("/getGithubAccessToken")]
-//pub async fn get_github_access_token(query: web::Query<AccessTokenQuery>) -> impl Responder {
-//    let code = &query.code;
-//    println!("{}", code);
-//    println!("SDLFJSDL:FJSLDFJ");
-//    HttpResponse::Ok().body("get_user")
-//}
