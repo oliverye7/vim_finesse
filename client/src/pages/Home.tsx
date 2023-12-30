@@ -1,17 +1,41 @@
 import React from "react";
-import Header from "../components/Home/Header.tsx";
 import Body from "../components/Home/Body.tsx";
-import Footer from "../components/Home/Footer.tsx";
+import { useGoogleLogin, GoogleLogin } from '@react-oauth/google';
+import BaseLayout from "../layouts/BaseLayout.js";
+import { useEffect, useState } from "react";
+import jwt_decode, { jwtDecode } from "jwt-decode";
+
 
 function Home() {
+  const login = useGoogleLogin({
+    onSuccess: tokenResponse => {
+      console.log("um");
+      const res = tokenResponse;
+      console.log(res.access_token);
+    }
+  });
+
   return (
-    <div className="text-3xl flex flex-col h-screen bg-blue-200">
-      <Header />
-      <main className="flex-grow mt-20 bg-blue-200">
+    <BaseLayout>
+      <div>
         <Body />
-      </main>
-      <Footer />
-    </div>
+      </div>
+      <div>
+        <div onClick={() => login()}>bing bong</div>
+        <GoogleLogin
+          onSuccess={credentialResponse => {
+            console.log(credentialResponse);
+            if (credentialResponse.credential !== undefined) {
+              const response = jwtDecode(credentialResponse.credential);
+              //console.log(response);
+            }
+          }}
+          onError={() => {
+            console.log('Login Failed');
+          }}
+        />
+      </div>
+    </BaseLayout>
   );
 }
 

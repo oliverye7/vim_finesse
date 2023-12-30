@@ -10,13 +10,16 @@ import {
   Routes,
   Link,
 } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <div className="flex flex-col min-h-screen overflow-auto">
-      <App />
-    </div>
+    <GoogleOAuthProvider clientId="1006401775837-vo4iohslhdmogd8grrgt1r31jvsgrj69.apps.googleusercontent.com">
+      <div className="flex flex-col min-h-screen overflow-auto">
+        <App />
+      </div>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );
 
