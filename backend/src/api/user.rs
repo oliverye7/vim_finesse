@@ -2,6 +2,8 @@
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use reqwest;
 use serde::Deserialize;
+use sqlx::Pool;
+use uuid::Uuid;
 //use bytes::BytesMut;
 //use prost::Message;
 
@@ -17,7 +19,7 @@ pub struct AccessTokenQuery {
 pub struct UserData {
     username: String,
     avatar_url: String,
-    id: i64,
+    id: i32,
     github_username: String
 }
 
@@ -33,17 +35,40 @@ pub async fn create_user(_request: web::Bytes) -> impl Responder {
 }
 
 #[post("/setUsername")]
-pub async fn set_username(data: web::Json<UserData>) -> impl Responder {
+pub async fn set_username(
+    pool: web::Data<Pool<sqlx::Postgres>>,
+    data: web::Json<UserData>
+) -> impl Responder {
     println!("asdlfjaosdfj;alsdfj;alkj");
 
     println!("Received Data: {:?}", data);
 
-    HttpResponse::Ok().body("yay")
+    println!("Username: {}", data.username);
+    println!("Avatar URL: {}", data.avatar_url);
+    println!("ID: {}", data.id);
+    println!("Github Username: {}", data.github_username);
+
+    let conn = pool.get_ref();
+
+    match sqlx::query!(
+        "INSERT INTO users (id, username, avatar_url, github_username) VALUES ($1, $2, $3, $4) RETURNING id;",
+        data.id,
+        data.username,
+        data.avatar_url,
+        data.github_username
+    )
+    .fetch_one(conn)
+    .await
+    {
+        Ok(_record) => {
+            HttpResponse::Ok().json(format!("User {} successfully added", data.username))
+        }
+        Err(e) => HttpResponse::InternalServerError().body(format!("Server Error: {}", e)),
+    }
 }
 
 #[get("/getGithubAccessToken")]
 pub async fn get_github_access_token(query: web::Query<AccessTokenQuery>) -> impl Responder {
-    println!("WE RECEIVED A FUNCTION CALL RAAAHHHH");
     let code = &query.code;
     let client = reqwest::Client::new();
 
@@ -74,7 +99,6 @@ pub async fn get_github_access_token(query: web::Query<AccessTokenQuery>) -> imp
 
 #[get("/getUserGithubProfile")]
 pub async fn get_user_github_profile(request: HttpRequest) -> impl Responder {
-    println!("Received");
 
     let auth_header = match request.headers().get("Authorization") {
         Some(header) => header.to_str().unwrap_or(""),
@@ -94,7 +118,6 @@ pub async fn get_user_github_profile(request: HttpRequest) -> impl Responder {
     {
         Ok(response) => match response.text().await {
             Ok(text) => {
-                println!("{}", text);
                 return HttpResponse::Ok().body(text);
             }
             Err(_) => HttpResponse::InternalServerError().finish(),

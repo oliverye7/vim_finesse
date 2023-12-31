@@ -1,8 +1,9 @@
 -- Add up migration script here
 CREATE TABLE users (
-    id UUID PRIMARY KEY,
-    email VARCHAR NOT NULL UNIQUE,
-    token VARCHAR
+    id INTEGER PRIMARY KEY,
+    avatar_url VARCHAR,
+    username VARCHAR NOT NULL,
+    github_username VARCHAR NOT NULL,
 );
 
 CREATE TABLE challenges (
