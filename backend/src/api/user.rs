@@ -8,6 +8,20 @@ use serde::Deserialize;
 const GITHUB_CLIENT_ID: &str = "d4bd59212a9e47a3ddcd";
 const GITHUB_CLIENT_SECRET: &str = "b5d1af3e2605448d72824627019670c44587be91";
 
+#[derive(Deserialize)]
+pub struct AccessTokenQuery {
+    code: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct UserData {
+    username: String,
+    avatar_url: String,
+    id: i64,
+    github_username: String
+}
+
+
 #[get("/user")]
 pub async fn get_user() -> impl Responder {
     HttpResponse::Ok().body("get_user")
@@ -18,9 +32,13 @@ pub async fn create_user(_request: web::Bytes) -> impl Responder {
     HttpResponse::Ok().body("create_user")
 }
 
-#[derive(Deserialize)]
-pub struct AccessTokenQuery {
-    code: String,
+#[post("/setUsername")]
+pub async fn set_username(data: web::Json<UserData>) -> impl Responder {
+    println!("asdlfjaosdfj;alsdfj;alkj");
+
+    println!("Received Data: {:?}", data);
+
+    HttpResponse::Ok().body("yay")
 }
 
 #[get("/getGithubAccessToken")]
@@ -60,7 +78,7 @@ pub async fn get_user_github_profile(request: HttpRequest) -> impl Responder {
 
     let auth_header = match request.headers().get("Authorization") {
         Some(header) => header.to_str().unwrap_or(""),
-        None => return HttpResponse::BadRequest().body("Authorization header missing")
+        None => return HttpResponse::BadRequest().body("Authorization header missing"),
     };
 
     let client = reqwest::Client::new();
