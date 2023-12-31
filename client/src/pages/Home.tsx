@@ -24,20 +24,27 @@ function Home() {
   };
 
   async function getUserData() {
-    console.log("rahhh");
     try {
-      const response = await fetch(`${server_url}/getUserGithubProfile`, {
+      let response = await fetch(`${server_url}/getUserGithubProfile`, {
         method: "GET",
         headers: {
           "Authorization" :  "Bearer " + localStorage.getItem("accessToken")
         }
       }) 
-      const data = await response.json();
+
+      let data = await response.json();
       setUserData({
         avatar_url: data.avatar_url,
         id: data.id,
         github_username: data.login,
       });
+
+      response = await fetch(`${server_url}/getUserName?id=${data.id}`, {
+        method: "GET"
+      });
+
+      data = await response.json();
+      setUsername(data.username)
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
     }
@@ -58,6 +65,7 @@ function Home() {
         localStorage.setItem("accessToken", data.access_token);
         // hacky way to get the page to refresh once the asynch function call completes
         setRerender(!rerender);
+        getUserData();
       }
     } catch (error) {
       console.error('There was a problem with the fetch operation:', error);
@@ -97,9 +105,9 @@ function Home() {
     if (codeParam && (localStorage.getItem("accessToken") === null)) {
       getAccessToken(codeParam);
     }
-    if (localStorage.getItem("accessToken") !== null) {
-      getUserData();
-    }
+    //if (localStorage.getItem("accessToken") !== null) {
+    //  getUserData();
+    //}
   }, [])
 
   return (
@@ -127,6 +135,10 @@ function Home() {
           :
           <></>
           }
+
+          <div>
+            Welcome, {username}
+          </div>
           <button onClick={() => { localStorage.removeItem("accessToken"); setRerender(!rerender)}}>
             Log Out
           </button>

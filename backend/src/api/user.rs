@@ -1,11 +1,9 @@
 //use log::info;
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use reqwest;
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use sqlx::Pool;
-use uuid::Uuid;
-//use bytes::BytesMut;
-//use prost::Message;
+use std::str::FromStr;
 
 const GITHUB_CLIENT_ID: &str = "d4bd59212a9e47a3ddcd";
 const GITHUB_CLIENT_SECRET: &str = "b5d1af3e2605448d72824627019670c44587be91";
@@ -13,6 +11,16 @@ const GITHUB_CLIENT_SECRET: &str = "b5d1af3e2605448d72824627019670c44587be91";
 #[derive(Deserialize)]
 pub struct AccessTokenQuery {
     code: String,
+}
+
+#[derive(Deserialize)]
+pub struct UserNameQuery {
+    id: String,
+}
+
+#[derive(Serialize)]
+pub struct UsernameJsonResponse {
+    username: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -39,17 +47,8 @@ pub async fn set_username(
     pool: web::Data<Pool<sqlx::Postgres>>,
     data: web::Json<UserData>
 ) -> impl Responder {
-    println!("asdlfjaosdfj;alsdfj;alkj");
-
-    println!("Received Data: {:?}", data);
-
-    println!("Username: {}", data.username);
-    println!("Avatar URL: {}", data.avatar_url);
-    println!("ID: {}", data.id);
-    println!("Github Username: {}", data.github_username);
 
     let conn = pool.get_ref();
-
     match sqlx::query!(
         "INSERT INTO users (id, username, avatar_url, github_username) VALUES ($1, $2, $3, $4) RETURNING id;",
         data.id,
@@ -64,6 +63,45 @@ pub async fn set_username(
             HttpResponse::Ok().json(format!("User {} successfully added", data.username))
         }
         Err(e) => HttpResponse::InternalServerError().body(format!("Server Error: {}", e)),
+    }
+}
+
+#[get("/getUserName")]
+pub async fn get_username(
+    pool: web::Data<Pool<sqlx::Postgres>>,
+    query: web::Query<UserNameQuery>
+) -> impl Responder {
+    let id = &query.id;
+    println!("RAHHHHHHH");
+    println!("{}", id);
+    match i32::from_str(id) {
+        Ok(id) => {
+            let conn = pool.get_ref();
+            match sqlx::query!(
+                "SELECT username FROM users WHERE id = $1;",
+                id,
+            )
+            .fetch_one(conn)
+            .await
+            {
+                Ok(record) => {
+                    let response = UsernameJsonResponse {
+                        username: record.username
+                    };
+                    HttpResponse::Ok().json(response)
+                }
+                Err(e) => {
+                    if e.to_string().contains("no rows returned") {
+                        HttpResponse::BadRequest().body("This user does not exist")
+                    } else {
+                        HttpResponse::InternalServerError().body(format!("Server Error: {}", e))
+                    }
+                }
+            }
+        }
+        Err(_) => {
+            HttpResponse::BadRequest().body("Invalid ID Format")
+        }
     }
 }
 
