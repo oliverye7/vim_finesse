@@ -49,8 +49,23 @@ pub async fn set_username(
 ) -> impl Responder {
 
     let conn = pool.get_ref();
+    match sqlx::query!("SELECT * FROM users WHERE username = $1;", data.username)
+        .fetch_one(conn)
+        .await
+    {
+        Ok(_record) => {
+            return HttpResponse::BadRequest().body("User already exists");
+        }
+        Err(sqlx::Error::RowNotFound) => {
+            // If no record is found, do nothing and proceed
+        }
+        Err(e) => {
+            return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
+        } 
+    }
+
     match sqlx::query!(
-        "INSERT INTO users (id, username, avatar_url, github_username) VALUES ($1, $2, $3, $4) RETURNING id;",
+        "INSERT INTO users (id, username, avatar_url, github_username) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username, avatar_url = EXCLUDED.avatar_url, github_username = EXCLUDED.github_username RETURNING id;",
         data.id,
         data.username,
         data.avatar_url,

@@ -74,11 +74,11 @@ function Home() {
 
   async function handleSubmit(event) {
     setSubmitAttempted(true);
-    event.preventDefault();
+    //event.preventDefault();
 
     if (username.length !== 0 && userData !== null) {
       // pass it to the backend :)
-      const response = await fetch(`${server_url}/setUsername`, {
+      await fetch(`${server_url}/setUsername`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json'
@@ -108,6 +108,7 @@ function Home() {
     if (localStorage.getItem("accessToken") !== null) {
       getUserData();
     }
+  // eslint-disable-next-line
   }, [])
 
   return (
@@ -149,7 +150,7 @@ function Home() {
             User is not logged in
           </div>
           <button onClick={loginWithGithub} className="border-black border-2 mt-8 p-3 hover:bg-blue-300">
-            click me for github stuff!!
+            click me to update your username (you only see this if logged in)
           </button>
         </>}
     </BaseLayout>

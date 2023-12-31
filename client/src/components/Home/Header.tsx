@@ -8,9 +8,9 @@ function Header(props) {
       <div className="justify-self-end font-medium flex gap-8 text-xl place-items-center">
         <a href="/about" className="text-site-menublack hover:text-site-black">About</a>
         <a href="/tutorial" className="text-site-menublack hover:text-site-black">How to Play</a>
-        <a className="text-site-menublack hover:text-site-black">
+        <div className="text-site-menublack hover:text-site-black">
           <Login></Login>
-        </a>
+        </div>
       </div>
     </div>
   );
