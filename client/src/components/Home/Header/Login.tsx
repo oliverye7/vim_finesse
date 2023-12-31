@@ -1,19 +1,16 @@
 import React from "react";
-import Body from "../components/Home/Body.tsx";
-import BaseLayout from "../layouts/BaseLayout.js";
 import { useEffect, useState } from "react";
-import { server_url } from "../constants.js";
+import { server_url } from "../../../constants";
 
 const CLIENT_ID = "d4bd59212a9e47a3ddcd";
 
-function Home() {
-
+function Login(props) {
   interface UserData {
-    avatar_url: string;
-    id: number;
-    github_username: string;
+       avatar_url: string;
+       id: number;
+       github_username: string;
   }
-
+    
   const [rerender, setRerender] = useState(false);
   const [username, setUsername] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -111,33 +108,11 @@ function Home() {
   }, [])
 
   return (
-    <BaseLayout>
-        <Body />
+    <div>
         {localStorage.getItem("accessToken") ?
         <>
           <div>
-            User is logged in 
-          </div>
-          <button onClick={getUserData} className="my-2">
-            click me to get some user data in console log
-          </button>
-          <form className="" onSubmit={handleSubmit}>
-            <div>Select a username</div>
-            <input type="text" placeholder="Anonymous" className="h-12 w-72 bg-white border-black border-2 my-2" onChange={handleChange}/>
-            <button type="submit" className="ml-4 bg-white hover:bg-slate-50">Submit</button>
-          </form>
-          {(username.length === 0  && submitAttempted) ? 
-          <>
-            <div className="-mt-2 text-sm text-red-500">
-              username cannot be empty
-            </div>
-          </>
-          :
-          <></>
-          }
-
-          <div>
-            Welcome, {username}
+            {username}
           </div>
           <button onClick={() => { localStorage.removeItem("accessToken"); setRerender(!rerender)}}>
             Log Out
@@ -145,15 +120,12 @@ function Home() {
         </>
         :
         <>
-          <div>
-            User is not logged in
-          </div>
-          <button onClick={loginWithGithub} className="border-black border-2 mt-8 p-3 hover:bg-blue-300">
-            click me for github stuff!!
+          <button onClick={loginWithGithub} className="">
+            Log In
           </button>
         </>}
-    </BaseLayout>
+    </div>
   );
 }
 
-export default Home;
+export default Login;
