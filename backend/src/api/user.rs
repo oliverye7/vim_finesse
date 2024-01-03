@@ -7,15 +7,6 @@ use std::str::FromStr;
 use std::env;
 use dotenv::dotenv;
 
-
-
-
-//const GITHUB_CLIENT_ID: &str = "d4bd59212a9e47a3ddcd";
-//const GITHUB_CLIENT_SECRET: &str = "b5d1af3e2605448d72824627019670c44587be91";
-
-//const GITHUB_CLIENT_ID: String = env::var("GITHUB_CLIENT_ID").expect("GITHUB_CLIENT_ID not set");
-//const GITHUB_CLIENT_SECRET: String = env::var("GITHUB_CLIENT_SECRET").expect("GITHUB_CLIENT_SECRET not set");
-
 #[derive(Deserialize)]
 pub struct AccessTokenQuery {
     code: String,
@@ -38,7 +29,6 @@ pub struct UserData {
     id: i32,
     github_username: String
 }
-
 
 #[get("/user")]
 pub async fn get_user() -> impl Responder {
@@ -95,8 +85,6 @@ pub async fn get_username(
     query: web::Query<UserNameQuery>
 ) -> impl Responder {
     let id = &query.id;
-    println!("RAHHHHHHH");
-    println!("{}", id);
     match i32::from_str(id) {
         Ok(id) => {
             let conn = pool.get_ref();
@@ -155,7 +143,6 @@ pub async fn get_github_access_token(query: web::Query<AccessTokenQuery>) -> imp
     {
         Ok(response) => match response.text().await {
             Ok(text) => {
-                println!("{}", text);
                 return HttpResponse::Ok().body(text);
             }
             Err(_) => HttpResponse::InternalServerError().finish(),

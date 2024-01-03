@@ -2,10 +2,10 @@ import React from "react";
 import Body from "../components/Home/Body.tsx";
 import BaseLayout from "../layouts/BaseLayout.js";
 import { useEffect, useState } from "react";
-import { server_url } from "../constants.js";
+import { server_url, github_client_id } from "../constants.js";
 import VimEditor from "../components/VimEditor.js";
 
-const CLIENT_ID = "d4bd59212a9e47a3ddcd";
+const CLIENT_ID = github_client_id;
 
 function Home() {
 
@@ -75,10 +75,8 @@ function Home() {
 
   async function handleSubmit(event) {
     setSubmitAttempted(true);
-    //event.preventDefault();
 
     if (username.length !== 0 && userData !== null) {
-      // pass it to the backend :)
       await fetch(`${server_url}/setUsername`, {
         method: "POST",
         headers: {

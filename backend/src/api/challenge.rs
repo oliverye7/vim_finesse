@@ -1,7 +1,7 @@
-use log::{info, warn};
-use serde::{Deserialize, Serialize};
 use actix_web::{get, post, web::Json, web::Path, HttpRequest, HttpResponse, Responder};
+use log::{info, warn};
 use reqwest;
+use serde::{Deserialize, Serialize};
 use sqlx::Pool;
 
 #[derive(Deserialize, Serialize)]
@@ -18,7 +18,7 @@ pub struct ChallengeResponse {
 pub struct ChallengeSubmission {
     challenge_id: i16,
     user_id: i32,
-    user_keystrokes: Vec<String>
+    user_keystrokes: Vec<String>,
 }
 
 #[get("/challenge")]
@@ -45,7 +45,10 @@ pub async fn get_specific_challenge(
 }
 
 #[post("/challenge/{challenge_id}/submit")]
-pub async fn submit_challenge(submission: Json<ChallengeSubmission>, challenge_id: Path<ChallengeIdentifier>) -> impl Responder {
+pub async fn submit_challenge(
+    submission: Json<ChallengeSubmission>,
+    challenge_id: Path<ChallengeIdentifier>,
+) -> impl Responder {
     println!("Received Challenge Submission!");
     println!("{:?}", submission.user_keystrokes);
     HttpResponse::Ok().body("ok")

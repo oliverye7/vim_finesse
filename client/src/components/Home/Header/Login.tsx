@@ -1,10 +1,10 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { server_url } from "../../../constants";
+import { server_url, github_client_id } from "../../../constants";
 
-const CLIENT_ID = "d4bd59212a9e47a3ddcd";
+const CLIENT_ID = github_client_id;
 
-function Login(props) {
+function Login() {
   interface UserData {
        avatar_url: string;
        id: number;
@@ -69,6 +69,7 @@ function Login(props) {
         console.error('There was a problem with the fetch operation:', error);
       }
     }
+
     const queryString = window.location.search;
     const codeParam = new URLSearchParams(queryString).get("code");
 

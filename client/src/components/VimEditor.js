@@ -1,29 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { server_url } from "../constants";
 import AceEditor from "react-ace-builds";
+import get_user_id from "../functions/helpers.tsx";
 import "react-ace-builds/webpack-resolver-min";
 
 function VimEditor() {
-  let keyPressCount = 0;
-  //let keyStrokes = [];
   const [keyStrokes, setKeyStrokes] = useState([]);
 
   function onChange(newValue) {
-    //console.log("change", newValue);
+    // write a function to check if the solution matches newValue
   }
 
   async function handleBlur() {
-    let response = await fetch(`${server_url}/getUserGithubProfile`, {
-      method: "GET",
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem("accessToken"),
-      },
-    });
+    let user_id = await get_user_id();
 
-    let data = await response.json();
-    let user_id = data.id;
-
-    response = await fetch(`${server_url}/challenge/${1}/submit`, {
+    let response = await fetch(`${server_url}/challenge/${1}/submit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -34,8 +25,6 @@ function VimEditor() {
         user_keystrokes: keyStrokes,
       }),
     });
-
-    console.log(response);
   }
 
   function setupKeydownListener() {
@@ -47,10 +36,7 @@ function VimEditor() {
     }
 
     editorElement.addEventListener("keyup", (event) => {
-      keyPressCount += 1;
-      console.log(`Key press ${keyPressCount}:`, event.key);
       keyStrokes.push(event.key);
-      console.log(keyStrokes);
     });
   }
 
@@ -59,7 +45,7 @@ function VimEditor() {
     // eslint-disable-next-line
   }, []);
 
-  const text = `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore 
+  const sample_text = `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore 
       \n et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
       \n ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat 
       \n nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id 
@@ -72,8 +58,7 @@ function VimEditor() {
         mode="java"
         theme="terminal"
         onChange={onChange}
-        name="UNIQUE_ID_OF_DIV"
-        value={text}
+        value={sample_text}
         width="900px"
         keyboardHandler="vim"
         highlightActiveLine={true}
