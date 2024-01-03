@@ -3,6 +3,7 @@ import Body from "../components/Home/Body.tsx";
 import BaseLayout from "../layouts/BaseLayout.js";
 import { useEffect, useState } from "react";
 import { server_url } from "../constants.js";
+import VimEditor from "../components/VimEditor.js";
 
 const CLIENT_ID = "d4bd59212a9e47a3ddcd";
 
@@ -150,9 +151,12 @@ function Home() {
             User is not logged in
           </div>
           <button onClick={loginWithGithub} className="border-black border-2 mt-8 p-3 hover:bg-blue-300">
-            click me to update your username (you only see this if logged in)
+            click me to login with github
           </button>
         </>}
+        <div className="bg-pink-200">
+          <VimEditor></VimEditor>
+        </div>
     </BaseLayout>
   );
 }
