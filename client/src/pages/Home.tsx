@@ -40,7 +40,12 @@ function Home() {
         github_username: data.login,
       });
 
-      response = await fetch(`${server_url}/getUserName?id=${data.id}`, {
+      let user_id = Number(data.id);
+      if (user_id === null) {
+        console.error("invalid user_id");
+      }
+
+      response = await fetch(`${server_url}/getUserName?id=${user_id}`, {
         method: "GET"
       });
 

@@ -1,8 +1,6 @@
-use actix_web::{get, post, web::Json, web::Path, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, post, web::Json, web::Path, HttpResponse, Responder};
 use log::{info, warn};
-use reqwest;
 use serde::{Deserialize, Serialize};
-use sqlx::Pool;
 
 #[derive(Deserialize, Serialize)]
 pub struct ChallengeIdentifier {
@@ -43,7 +41,9 @@ pub async fn get_specific_challenge(
     };
     Json(response)
 }
-
+/*
+ * Prints out a user's submission for a challenge
+*/
 #[post("/challenge/{challenge_id}/submit")]
 pub async fn submit_challenge(
     submission: Json<ChallengeSubmission>,
