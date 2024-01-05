@@ -62,21 +62,27 @@ pub async fn set_username(
     pool: web::Data<Pool<sqlx::Postgres>>,
     data: web::Json<UserData>,
 ) -> impl Responder {
-    let conn = pool.get_ref();
+    let mut txn = pool.get_ref().begin().await.unwrap();
     match sqlx::query!("SELECT * FROM users WHERE username = $1;", data.username)
-        .fetch_one(conn)
-        .await
-    {
-        Ok(_record) => {
-            return HttpResponse::BadRequest().body("User already exists");
-        }
-        Err(sqlx::Error::RowNotFound) => {
-            // If no record is found, do nothing and proceed
-        }
-        Err(e) => {
-            return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
-        }
-    }
+          .fetch_optional(&mut *txn)
+          .await
+          {
+            Ok(Some(_)) => {
+                txn.rollback().await.unwrap();
+                return HttpResponse::BadRequest().body("User already exists");
+                
+            }
+            Ok(None) => {
+                // do nothing
+            }
+            Err(sqlx::Error::RowNotFound) => {
+                // do nothing
+            }
+            Err(e) => {
+                txn.rollback().await.unwrap();
+                return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
+            }
+            };
 
     match sqlx::query!(
         "INSERT INTO users (id, username, avatar_url, github_username) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username, avatar_url = EXCLUDED.avatar_url, github_username = EXCLUDED.github_username RETURNING id;",
@@ -85,13 +91,17 @@ pub async fn set_username(
         data.avatar_url,
         data.github_username
     )
-    .fetch_one(conn)
+    .fetch_one(&mut *txn)
     .await
     {
         Ok(_record) => {
-            HttpResponse::Ok().json(format!("User {} successfully added", data.username))
+            txn.commit().await.unwrap();
+            return HttpResponse::Ok().json(format!("User {} successfully added", data.username));
         }
-        Err(e) => HttpResponse::InternalServerError().body(format!("Server Error: {}", e)),
+        Err(e) => {
+            txn.rollback().await.unwrap();
+            return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
+        }
     }
 }
 
