@@ -119,3 +119,4 @@ Every time `./protos/*.proto` gets updated, running `cargo build` will auto-gene
 installation steps:
 
 `npm install @types/react @types/react-dom`
+`npm install --save vim-wasm`

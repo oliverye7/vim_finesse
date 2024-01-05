@@ -6,7 +6,6 @@ interface ChallengeResponse {
 }
 
 function ChallengeComponent() {
-  //const [challenge, setChallenge] = useState("");
   const [challenge, setChallenge] = useState<ChallengeResponse | null>(null);
 
   useEffect(() => {
