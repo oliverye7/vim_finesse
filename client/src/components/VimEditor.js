@@ -5,7 +5,6 @@ import get_user_id from "../functions/helpers.tsx";
 import "react-ace-builds/webpack-resolver-min";
 
 function VimEditor(props) {
-  // TODO: strongly type the props coming in
   const [keyStrokes, setKeyStrokes] = useState([]);
   const [startState, setStartState] = useState("");
   const [targetState, setTargetState] = useState("");
@@ -16,7 +15,6 @@ function VimEditor(props) {
   const [completed, setCompleted] = useState(false);
 
   function onChange(newValue) {
-    // write a function to check if the solution matches newValue
     setStartState(newValue);
     setCharOffset(1);
     setCompleted(newValue === targetState);
@@ -28,6 +26,11 @@ function VimEditor(props) {
   async function handleBlur() {
     let user_id = await get_user_id();
 
+    // TODO: is this the actual way you would handle it? or should backend always return 200 success but secretly just not handle invalid IDs
+    if (user_id == -1) {
+      console.error("Login Credentials Invalid");
+    }
+
     await fetch(`${server_url}/challenge/${1}/submit`, {
       method: "POST",
       headers: {
@@ -35,6 +38,7 @@ function VimEditor(props) {
       },
       body: JSON.stringify({
         challenge_id: challengeId,
+        challenge_name: challengeName,
         user_id: user_id,
         user_keystrokes: keyStrokes,
       }),
@@ -76,7 +80,6 @@ function VimEditor(props) {
     // eslint-disable-next-line
   }, [props.challenge_description]);
 
-  // Render editor
   return (
     <div id="editor">
       {!completed ? (

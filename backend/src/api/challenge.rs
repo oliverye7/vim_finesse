@@ -3,7 +3,6 @@ use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use sqlx::Pool;
 use uuid::{Uuid};
-use std::collections::HashMap;
 
 
 #[derive(Deserialize, Serialize)]
@@ -16,7 +15,7 @@ pub struct ChallengeName {
     challenge_name: String,
 }
 
-// HELP this is kind of redundant cuz i feel like it overlaps with the previous two structs?
+// TODO: (HELP) this is kind of redundant cuz i feel like it overlaps with the previous two structs?
 #[derive(sqlx::FromRow, serde::Serialize)]
 struct Challenge {
     id: Uuid,
@@ -30,7 +29,8 @@ pub struct ChallengeResponse {
 
 #[derive(Deserialize, Serialize)]
 pub struct ChallengeSubmission {
-    challenge_id: i16,
+    challenge_id: Uuid,
+    challenge_name: String,
     user_id: i32,
     user_keystrokes: Vec<String>,
 }
@@ -125,7 +125,26 @@ pub async fn add_challenge(
     pool: web::Data<Pool<sqlx::Postgres>>,
 ) -> impl Responder {
     let mut txn = pool.get_ref().begin().await.unwrap();
-    // TODO: add verification for no duplicate challenges
+
+    match sqlx::query!("SELECT * FROM challenges where challenge_name = $1;", challenge.challenge_name)
+    .fetch_optional(&mut *txn)
+    .await
+    {
+      Ok(Some(_)) => {
+          txn.rollback().await.unwrap();
+          return HttpResponse::BadRequest().body("A challenge with this name already exists");
+      }
+      Ok(None) => {
+          // do nothing
+      }
+      Err(sqlx::Error::RowNotFound) => {
+          // do nothing
+      }
+      Err(e) => {
+          txn.rollback().await.unwrap();
+          return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
+      }
+      };
 
     let id = Uuid::new_v4();
     match sqlx::query!(
@@ -159,6 +178,7 @@ pub async fn submit_challenge_attempt(
     submission: Json<ChallengeSubmission>,
     challenge_id: Path<ChallengeIdentifier>,
 ) -> impl Responder {
+    // TODO (in the next PR): add submission to the user's profile table to log running stats
     println!("Received Challenge Submission!");
     println!("{:?}", submission.user_keystrokes);
     HttpResponse::Ok().body("ok")
