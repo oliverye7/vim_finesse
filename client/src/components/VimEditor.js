@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { server_url } from "../constants";
+import { server_url } from "../constants.js";
 import AceEditor from "react-ace-builds";
 import get_user_id from "../functions/helpers.tsx";
 import "react-ace-builds/webpack-resolver-min";
 
-function VimEditor() {
+function VimEditor(props) {
   const [keyStrokes, setKeyStrokes] = useState([]);
 
   function onChange(newValue) {
     // write a function to check if the solution matches newValue
+    console.log(newValue);
+    if (newValue === solution_text) {
+      console.log("completed");
+    }
   }
 
   async function handleBlur() {
     let user_id = await get_user_id();
 
-    let response = await fetch(`${server_url}/challenge/${1}/submit`, {
+    await fetch(`${server_url}/challenge/${1}/submit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,10 +50,12 @@ function VimEditor() {
   }, []);
 
   const sample_text = `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore 
-      \n et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-      \n ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat 
-      \n nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id 
-      \n est laborum`;
+et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
+ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat 
+nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id 
+est laborum`;
+
+  const solution_text = ``;
 
   // Render editor
   return (
@@ -58,8 +64,9 @@ function VimEditor() {
         mode="java"
         theme="terminal"
         onChange={onChange}
+        focus={true}
         value={sample_text}
-        width="900px"
+        width="1100px"
         keyboardHandler="vim"
         highlightActiveLine={true}
         onBlur={handleBlur}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { server_url } from "../../../constants";
+import VimEditor from "../../VimEditor";
 
 interface ChallengeResponse {
   message: String,
@@ -21,8 +22,11 @@ function ChallengeComponent() {
 
   return (
     <div>
+      {/*
       <div>Challenge</div>
       <div>{challenge?.message}</div>
+      */}
+      <VimEditor></VimEditor>
     </div>
   );
 }

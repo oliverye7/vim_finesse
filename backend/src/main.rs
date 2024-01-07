@@ -4,7 +4,7 @@ mod model;
 
 use actix_cors::Cors;
 use actix_web::{http, middleware::Logger, web, App, HttpServer};
-use api::challenge::{get_challenge, get_specific_challenge, submit_challenge};
+use api::challenge::{get_challenge, submit_challenge_attempt, add_challenge};
 use api::user::{
     create_user, get_github_access_token, get_user, get_user_github_profile, get_username,
     set_username,
@@ -48,8 +48,8 @@ async fn main() -> std::io::Result<()> {
             .service(get_username)
             .service(set_username)
             .service(get_challenge)
-            .service(get_specific_challenge)
-            .service(submit_challenge)
+            .service(submit_challenge_attempt)
+            .service(add_challenge)
     })
     .bind(("127.0.0.1", PORT_NUMBER))?
     .run()
