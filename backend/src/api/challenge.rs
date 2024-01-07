@@ -3,6 +3,7 @@ use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use sqlx::Pool;
 use uuid::{Uuid};
+use std::collections::HashMap;
 
 
 #[derive(Deserialize, Serialize)]
@@ -12,6 +13,13 @@ pub struct ChallengeIdentifier {
 
 #[derive(Deserialize, Serialize)]
 pub struct ChallengeName {
+    challenge_name: String,
+}
+
+// HELP this is kind of redundant cuz i feel like it overlaps with the previous two structs?
+#[derive(sqlx::FromRow, serde::Serialize)]
+struct Challenge {
+    id: Uuid,
     challenge_name: String,
 }
 
@@ -35,6 +43,34 @@ pub struct ChallengeDescription {
     target_state: String,
     start_line_offset: i32,
     start_char_offset: i32
+}
+
+/*
+ * Fetch all <challenge name, challenge id> labels of all challenges 
+ * TODO: implement pagination where the entire DB is not queried at the same time, you can query the first "page" of challenges that a user is meant to see
+ * e.g. if the first page only displays 20 challenges, only fetch the first 40 challenges
+*/
+#[get("/allChallenges")]
+pub async fn get_challenge_identifiers(
+    pool: web::Data<Pool<sqlx::Postgres>>,
+) -> impl Responder {
+    let mut txn = pool.get_ref().begin().await.unwrap();
+    let challenges: Vec<Challenge> = sqlx::query_as!(
+        Challenge,
+        "SELECT id, challenge_name FROM challenges;"
+    )
+    .fetch_all(&mut *txn)
+    .await
+    .unwrap();
+
+    txn.commit().await.unwrap();
+
+    let challenge_map: HashMap<Uuid, String> = challenges
+        .into_iter()
+        .map(|c| (c.id, c.challenge_name))
+        .collect();
+
+    HttpResponse::Ok().json(challenge_map)
 }
 
 #[get("/challenge")]
