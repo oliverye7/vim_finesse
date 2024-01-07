@@ -1,10 +1,25 @@
-use actix_web::{get, post, web::Json, web::Path, HttpResponse, Responder};
+use actix_web::{get, post, web::Json, web::Path, HttpResponse, Responder, web};
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
+use sqlx::Pool;
+use uuid::{Uuid};
+
 
 #[derive(Deserialize, Serialize)]
 pub struct ChallengeIdentifier {
     challenge_id: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct ChallengeName {
+    challenge_name: String,
+}
+
+// TODO: (HELP) this is kind of redundant cuz i feel like it overlaps with the previous two structs?
+#[derive(sqlx::FromRow, serde::Serialize)]
+struct Challenge {
+    id: Uuid,
+    challenge_name: String,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -14,41 +29,156 @@ pub struct ChallengeResponse {
 
 #[derive(Deserialize, Serialize)]
 pub struct ChallengeSubmission {
-    challenge_id: i16,
+    challenge_id: Uuid,
+    challenge_name: String,
     user_id: i32,
     user_keystrokes: Vec<String>,
 }
 
-#[get("/challenge")]
-pub async fn get_challenge() -> Json<ChallengeResponse> {
-    info!("Requesting to get a challenge.");
-    let response = ChallengeResponse {
-        message: "received challenge: lorem ipsum dolor... ".to_string(),
-    };
-    Json(response)
+#[derive(Deserialize, Serialize)]
+pub struct ChallengeDescription {
+    challenge_id: Option<Uuid>,
+    challenge_name: String,
+    start_state: String,
+    target_state: String,
+    start_line_offset: i32,
+    start_char_offset: i32
+}
+
+/*
+ * Fetch all <challenge name, challenge id> labels of all challenges 
+ * TODO: implement pagination where the entire DB is not queried at the same time, you can query the first "page" of challenges that a user is meant to see
+ * e.g. if the first page only displays 20 challenges, only fetch the first 40 challenges
+*/
+#[get("/allChallenges")]
+pub async fn get_challenge_identifiers(
+    pool: web::Data<Pool<sqlx::Postgres>>,
+) -> impl Responder {
+    let mut txn = pool.get_ref().begin().await.unwrap();
+    let challenges: Vec<Challenge> = sqlx::query_as!(
+        Challenge,
+        "SELECT id, challenge_name FROM challenges;"
+    )
+    .fetch_all(&mut *txn)
+    .await
+    .unwrap();
+
+    txn.commit().await.unwrap();
+
+    let challenge_list: Vec<Vec<String>> = challenges
+    .into_iter()
+    .map(|c| vec![c.id.to_string(), c.challenge_name])
+    .collect();
+
+    HttpResponse::Ok().json(challenge_list)
 }
 
 #[get("/challenge/{challenge_id}")]
-pub async fn get_specific_challenge(
+pub async fn get_challenge(
     challenge_id: Path<ChallengeIdentifier>,
-) -> Json<ChallengeResponse> {
-    warn!("Database is not setup yet.");
-    let response = ChallengeResponse {
-        message: format!(
-            "User requested to get a challenge and got {}",
-            challenge_id.into_inner().challenge_id
-        ),
-    };
-    Json(response)
+    pool: web::Data<Pool<sqlx::Postgres>>,
+) -> impl Responder {
+    let id_str = &challenge_id.challenge_id;
+    let id = Uuid::parse_str(&id_str).expect("Invalid UUID format");
+
+    let mut txn = pool.get_ref().begin().await.unwrap();
+    match sqlx::query!(
+        "SELECT * FROM challenges WHERE id = $1;",
+        id
+    )
+    .fetch_optional(&mut *txn)
+    .await
+    {
+        Ok(record) => {
+            txn.commit().await.unwrap();
+            match record {
+                Some(record) => {
+                    let description = ChallengeDescription {
+                        challenge_id: Some(record.id),
+                        challenge_name: record.challenge_name,
+                        start_state: record.start_state,
+                        target_state: record.target_state,
+                        start_line_offset: record.start_line_offset,
+                        start_char_offset: record.start_char_offset
+                    };
+
+                    return HttpResponse::Ok().json(description);
+                }
+                None => {
+                    return HttpResponse::NotFound().body("Record not found");
+                }
+            }
+        }
+        Err(e) => {
+            txn.rollback().await.unwrap();
+            return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
+        }
+    }
 }
+
+/*
+ * Adds a challenge to database
+*/
+#[post("/add_challenge")]
+pub async fn add_challenge(
+    challenge: Json<ChallengeDescription>,
+    pool: web::Data<Pool<sqlx::Postgres>>,
+) -> impl Responder {
+    let mut txn = pool.get_ref().begin().await.unwrap();
+
+    match sqlx::query!("SELECT * FROM challenges where challenge_name = $1;", challenge.challenge_name)
+    .fetch_optional(&mut *txn)
+    .await
+    {
+      Ok(Some(_)) => {
+          txn.rollback().await.unwrap();
+          return HttpResponse::BadRequest().body("A challenge with this name already exists");
+      }
+      Ok(None) => {
+          // do nothing
+      }
+      Err(sqlx::Error::RowNotFound) => {
+          // do nothing
+      }
+      Err(e) => {
+          txn.rollback().await.unwrap();
+          return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
+      }
+      };
+
+    let id = Uuid::new_v4();
+    match sqlx::query!(
+        "INSERT INTO challenges (id, challenge_name, start_state, target_state, start_line_offset, start_char_offset) VALUES ($1, $2, $3, $4, $5, $6) returning id;",
+        id,
+        challenge.challenge_name,
+        challenge.start_state,
+        challenge.target_state,
+        challenge.start_line_offset,
+        challenge.start_char_offset
+    )
+    .fetch_one(&mut *txn)
+    .await
+    {
+        Ok(_record) => {
+            txn.commit().await.unwrap();
+            return HttpResponse::Ok().body("successfully added challenge");
+        }
+        Err(e) => {
+            txn.rollback().await.unwrap();
+            return HttpResponse::InternalServerError().body(format!("Server Error: {}", e));
+        }
+    }
+}
+
 /*
  * Prints out a user's submission for a challenge
 */
 #[post("/challenge/{challenge_id}/submit")]
-pub async fn submit_challenge(
+pub async fn submit_challenge_attempt(
     submission: Json<ChallengeSubmission>,
     challenge_id: Path<ChallengeIdentifier>,
 ) -> impl Responder {
+    // TODO (in the next PR): add submission to the user's profile table to log running stats
     println!("Received Challenge Submission!");
     println!("{:?}", submission.user_keystrokes);
     HttpResponse::Ok().body("ok")

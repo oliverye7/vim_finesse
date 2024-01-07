@@ -1,26 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { server_url } from "../constants";
+import { server_url } from "../constants.js";
 import AceEditor from "react-ace-builds";
 import get_user_id from "../functions/helpers.tsx";
 import "react-ace-builds/webpack-resolver-min";
 
-function VimEditor() {
+function VimEditor(props) {
   const [keyStrokes, setKeyStrokes] = useState([]);
+  const [startState, setStartState] = useState("");
+  const [targetState, setTargetState] = useState("");
+  const [challengeName, setChallengeName] = useState("");
+  const [challengeId, setChallengeId] = useState("");
+  const [lineOffset, setLineOffset] = useState(0);
+  const [charOffset, setCharOffset] = useState(0);
+  const [completed, setCompleted] = useState(false);
 
   function onChange(newValue) {
-    // write a function to check if the solution matches newValue
+    setStartState(newValue);
+    setCharOffset(1);
+    setCompleted(newValue === targetState);
+    if (newValue === targetState) {
+      setStartState(targetState);
+    }
   }
 
   async function handleBlur() {
     let user_id = await get_user_id();
 
-    let response = await fetch(`${server_url}/challenge/${1}/submit`, {
+    // TODO: is this the actual way you would handle it? or should backend always return 200 success but secretly just not handle invalid IDs
+    if (user_id == -1) {
+      console.error("Login Credentials Invalid");
+    }
+
+    await fetch(`${server_url}/challenge/${1}/submit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        challenge_id: 1,
+        challenge_id: challengeId,
+        challenge_name: challengeName,
         user_id: user_id,
         user_keystrokes: keyStrokes,
       }),
@@ -36,8 +54,12 @@ function VimEditor() {
     }
 
     editorElement.addEventListener("keyup", (event) => {
-      keyStrokes.push(event.key);
+      setKeyStrokes((prev) => [...prev, event.key]);
     });
+  }
+
+  function clearKeyStrokes() {
+    setKeyStrokes([]);
   }
 
   useEffect(() => {
@@ -45,26 +67,44 @@ function VimEditor() {
     // eslint-disable-next-line
   }, []);
 
-  const sample_text = `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore 
-      \n et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-      \n ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat 
-      \n nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id 
-      \n est laborum`;
+  useEffect(() => {
+    setStartState(props.challenge_description.start_state);
+    setTargetState(props.challenge_description.target_state);
+    setCharOffset(props.challenge_description.start_char_offset);
+    setLineOffset(props.challenge_description.start_line_offset);
+    setChallengeName(props.challenge_description.challenge_name);
+    setChallengeId(props.challenge_description.challenge_id);
+    setCompleted(false);
+    clearKeyStrokes();
+    console.log("change");
+    // eslint-disable-next-line
+  }, [props.challenge_description]);
 
-  // Render editor
   return (
     <div id="editor">
+      {!completed ? (
+        <div>Challenge: {challengeName}</div>
+      ) : (
+        <div>
+          <div className="text-green-600">{challengeName} Completed!</div>
+          <div>Keystrokes used: {keyStrokes.join(", ")}</div>
+          <div>Keystrokes count: {keyStrokes.length}</div>
+        </div>
+      )}
       <AceEditor
         mode="java"
         theme="terminal"
         onChange={onChange}
-        value={sample_text}
-        width="900px"
+        focus={true}
+        value={startState}
+        readOnly={completed}
+        width="1200px"
         keyboardHandler="vim"
         highlightActiveLine={true}
         onBlur={handleBlur}
         fontSize={14}
-        showPrintMargin={true}
+        showPrintMargin={false}
+        wrapEnabled={true}
         showGutter={true}
         setOptions={{
           enableBasicAutocompletion: false,

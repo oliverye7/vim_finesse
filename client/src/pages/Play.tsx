@@ -1,15 +1,16 @@
 import React from "react";
 import ChallengeComponent from "../components/Home/Play/Challenge.tsx";
+import BaseLayout from "../layouts/BaseLayout.js";
+
 
 function Play(props) {
   return (
-    <div>
+    <BaseLayout>
       <div>
-        <a href="/home">go back home</a>
+        Available tasks
+        <ChallengeComponent></ChallengeComponent>
       </div>
-      play the game:
-      <ChallengeComponent></ChallengeComponent>
-    </div>
+    </BaseLayout>
   );
 }
 

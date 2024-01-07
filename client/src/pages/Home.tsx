@@ -157,9 +157,12 @@ function Home() {
             click me to login with github
           </button>
         </>}
+        {/*
         <div className="bg-pink-200">
           <VimEditor></VimEditor>
         </div>
+
+        */}
     </BaseLayout>
   );
 }
