@@ -5,13 +5,23 @@ import get_user_id from "../functions/helpers.tsx";
 import "react-ace-builds/webpack-resolver-min";
 
 function VimEditor(props) {
+  // TODO: strongly type the props coming in
   const [keyStrokes, setKeyStrokes] = useState([]);
+  const [startState, setStartState] = useState("");
+  const [targetState, setTargetState] = useState("");
+  const [challengeName, setChallengeName] = useState("");
+  const [challengeId, setChallengeId] = useState("");
+  const [lineOffset, setLineOffset] = useState(0);
+  const [charOffset, setCharOffset] = useState(0);
+  const [completed, setCompleted] = useState(false);
 
   function onChange(newValue) {
     // write a function to check if the solution matches newValue
-    console.log(newValue);
-    if (newValue === solution_text) {
-      console.log("completed");
+    setStartState(newValue);
+    setCharOffset(1);
+    setCompleted(newValue === targetState);
+    if (newValue === targetState) {
+      setStartState(targetState);
     }
   }
 
@@ -24,7 +34,7 @@ function VimEditor(props) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        challenge_id: 1,
+        challenge_id: challengeId,
         user_id: user_id,
         user_keystrokes: keyStrokes,
       }),
@@ -40,8 +50,12 @@ function VimEditor(props) {
     }
 
     editorElement.addEventListener("keyup", (event) => {
-      keyStrokes.push(event.key);
+      setKeyStrokes((prev) => [...prev, event.key]);
     });
+  }
+
+  function clearKeyStrokes() {
+    setKeyStrokes([]);
   }
 
   useEffect(() => {
@@ -49,29 +63,45 @@ function VimEditor(props) {
     // eslint-disable-next-line
   }, []);
 
-  const sample_text = `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore 
-et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat 
-nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id 
-est laborum`;
-
-  const solution_text = ``;
+  useEffect(() => {
+    setStartState(props.challenge_description.start_state);
+    setTargetState(props.challenge_description.target_state);
+    setCharOffset(props.challenge_description.start_char_offset);
+    setLineOffset(props.challenge_description.start_line_offset);
+    setChallengeName(props.challenge_description.challenge_name);
+    setChallengeId(props.challenge_description.challenge_id);
+    setCompleted(false);
+    clearKeyStrokes();
+    console.log("change");
+    // eslint-disable-next-line
+  }, [props.challenge_description]);
 
   // Render editor
   return (
     <div id="editor">
+      {!completed ? (
+        <div>Challenge: {challengeName}</div>
+      ) : (
+        <div>
+          <div className="text-green-600">{challengeName} Completed!</div>
+          <div>Keystrokes used: {keyStrokes.join(", ")}</div>
+          <div>Keystrokes count: {keyStrokes.length}</div>
+        </div>
+      )}
       <AceEditor
         mode="java"
         theme="terminal"
         onChange={onChange}
         focus={true}
-        value={sample_text}
-        width="1100px"
+        value={startState}
+        readOnly={completed}
+        width="1200px"
         keyboardHandler="vim"
         highlightActiveLine={true}
         onBlur={handleBlur}
         fontSize={14}
-        showPrintMargin={true}
+        showPrintMargin={false}
+        wrapEnabled={true}
         showGutter={true}
         setOptions={{
           enableBasicAutocompletion: false,

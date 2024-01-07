@@ -7,7 +7,7 @@ function Play(props) {
   return (
     <BaseLayout>
       <div>
-        play the game:
+        Available tasks
         <ChallengeComponent></ChallengeComponent>
       </div>
     </BaseLayout>
