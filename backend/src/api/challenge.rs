@@ -65,17 +65,17 @@ pub async fn get_challenge_identifiers(
 
     txn.commit().await.unwrap();
 
-    let challenge_map: HashMap<Uuid, String> = challenges
-        .into_iter()
-        .map(|c| (c.id, c.challenge_name))
-        .collect();
+    let challenge_list: Vec<Vec<String>> = challenges
+    .into_iter()
+    .map(|c| vec![c.id.to_string(), c.challenge_name])
+    .collect();
 
-    HttpResponse::Ok().json(challenge_map)
+    HttpResponse::Ok().json(challenge_list)
 }
 
-#[get("/challenge")]
+#[get("/challenge/{challenge_id}")]
 pub async fn get_challenge(
-    challenge_id: Json<ChallengeIdentifier>,
+    challenge_id: Path<ChallengeIdentifier>,
     pool: web::Data<Pool<sqlx::Postgres>>,
 ) -> impl Responder {
     let id_str = &challenge_id.challenge_id;
