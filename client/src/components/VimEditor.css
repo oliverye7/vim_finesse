@@ -1,0 +1,8 @@
+.editor-focused .ace_cursor {
+    cursor: move !important;
+  }
+  
+  .editor-cursor-style .ace_cursor {
+    cursor: help !important;
+  }
+  

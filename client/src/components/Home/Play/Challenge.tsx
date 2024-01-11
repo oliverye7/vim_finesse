@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { server_url } from "../../../constants";
-import VimEditor from "../../VimEditor";
+import VimEditor from "../../VimEditor.tsx";
 
 interface ChallengeIdentifier {
   id: string;

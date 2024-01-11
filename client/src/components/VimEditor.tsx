@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { server_url } from "../constants.js";
 import AceEditor from "react-ace-builds";
 import get_user_id from "../functions/helpers.tsx";
 import "react-ace-builds/webpack-resolver-min";
 
 function VimEditor(props) {
-  const [keyStrokes, setKeyStrokes] = useState([]);
+  const [keyStrokes, setKeyStrokes] = useState<string[]>([]);
   const [startState, setStartState] = useState("");
   const [targetState, setTargetState] = useState("");
   const [challengeName, setChallengeName] = useState("");
   const [challengeId, setChallengeId] = useState("");
   const [lineOffset, setLineOffset] = useState(0);
   const [charOffset, setCharOffset] = useState(0);
+  const divRef = useRef<HTMLDivElement>(null)
   const [completed, setCompleted] = useState(false);
+  const [isFocus, setIsFocus] = useState(false);
 
   function onChange(newValue) {
     setStartState(newValue);
@@ -55,6 +57,11 @@ function VimEditor(props) {
 
     editorElement.addEventListener("keyup", (event) => {
       setKeyStrokes((prev) => [...prev, event.key]);
+      console.log("keyup: ", event.key);
+    });
+
+    editorElement.addEventListener("keydown", (event) => {
+      console.log("keydown: ", event.key);
     });
   }
 
@@ -62,8 +69,29 @@ function VimEditor(props) {
     setKeyStrokes([]);
   }
 
+  function handleClickOutside(event: MouseEvent) {
+    console.log(divRef.current);
+    console.log(divRef.current?.contains(event.target as Node));
+    if (divRef.current && divRef.current.contains(event.target as Node)) {
+      setIsFocus(true);
+      console.log('a');
+    } else {
+      // This else block is important to maintain focus if the click is inside the div
+      setIsFocus(false);
+      console.log('b');
+    }
+  }
+
+
   useEffect(() => {
     setupKeydownListener();
+
+    document.addEventListener('click', handleClickOutside);
+
+    // Clean up
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
     // eslint-disable-next-line
   }, []);
 
@@ -91,29 +119,37 @@ function VimEditor(props) {
           <div>Keystrokes count: {keyStrokes.length}</div>
         </div>
       )}
-      <AceEditor
-        mode="java"
-        theme="terminal"
-        onChange={onChange}
-        focus={true}
-        value={startState}
-        readOnly={completed}
-        width="1200px"
-        keyboardHandler="vim"
-        highlightActiveLine={true}
-        onBlur={handleBlur}
-        fontSize={14}
-        showPrintMargin={false}
-        wrapEnabled={true}
-        showGutter={true}
-        setOptions={{
-          enableBasicAutocompletion: false,
-          enableLiveAutocompletion: false,
-          enableSnippets: false,
-          showLineNumbers: true,
-          tabSize: 2,
-        }}
-      />
+      {/*
+      <div ref={divRef}>
+        <div className={`${isFocus ? "cursor-move" : "cursor-help"}`} ></div>
+        </div>
+      */}
+      <div ref={divRef} className={`${isFocus ? "editor-focused" : ""}`}>
+        <div className="editor-cursor-style"></div>
+          test content
+          <AceEditor
+            mode="java"
+            theme="terminal"
+            onChange={onChange}
+            value={startState}
+            readOnly={completed}
+            width="1200px"
+            keyboardHandler="vim"
+            highlightActiveLine={true}
+            onBlur={handleBlur}
+            fontSize={14}
+            showPrintMargin={false}
+            wrapEnabled={true}
+            showGutter={true}
+            setOptions={{
+              enableBasicAutocompletion: false,
+              enableLiveAutocompletion: false,
+              enableSnippets: false,
+              showLineNumbers: true,
+              tabSize: 2,
+            }}
+          />
+      </div>
     </div>
   );
 }
